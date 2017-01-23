@@ -1,3 +1,17 @@
+/******************************************
+ *               TxtFX Bot                *
+ *         Created by Evan Straw          *
+ * Applies various Unicode pseudoalphabet *
+ * effects to text inputted via Telegram. *
+ *                                        *
+ * This code is under the MIT License     *
+ * (see LICENSE)                          *
+ ******************************************
+ * logutil.js                             *
+ * Contains functions for logging,        *
+ * including formatting and time.         *
+ ******************************************/
+
 //require the colors library, to make colored text in the console
 var colors = require('colors');
 
