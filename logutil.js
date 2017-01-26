@@ -20,11 +20,47 @@ var colors = require('colors');
 //used to determine whether the full date should be sent - if only the time is different and not the day then we won't waste space
 var lastTime = new Date(0);
 
-//object holding some preset logging levels and their formatted prefixes
-const levels = {
-	info: "INFO".bold.green,
-	warn: "WARN".bold.yellow,
-	err: "ERROR".bold.red
+//make all the stuff inside this public, so we can access it from the main program file
+module.exports = {
+	//object holding some preset logging levels and their formatted prefixes
+	levels: {
+		info: "INFO".bold.green,
+		warn: "WARN".bold.yellow,
+		err: "ERROR".bold.red
+	},
+	//function to output log messages to the console
+	log: function(msg, level){
+		//if no level is provided
+		if((level == null) || (level === undefined) || (level.trim() == "")){
+			//level is automatically INFO
+			level = module.exports.levels.info;
+		}
+		//variable to hold the current time
+		var currentTime = time();
+		//output the message, formatting the time string based on last time and current time
+		console.log("["+timefmt(currentTime,lastTime)+"]["+level+"] "+msg);
+		//assign the current time to the last time; it will be compared the next time a log message is sent
+		lastTime = currentTime;
+	},
+	//function to exit and display a log message based on the status code
+	exit: function(code){
+		//variable to hold the log level
+		var level = "";
+		//if the exit status code is greater than zero (error occurred)
+		if(code>0){
+			//set the log level to "ERROR"
+			level = module.exports.levels.err;
+		}
+		//otherwise
+		else{
+			//set the log level to "INFO"
+			level = module.exports.levels.info;
+		}
+		//output the log message, including the status code
+		module.exports.log("Exiting... (Code: "+code+")",level);
+		//actually exit the program, returning the status code
+		process.exit(code);
+	}	
 }
 
 //gets the current time as a Date object.
@@ -63,39 +99,4 @@ function timefmt(now, last){
 	outstr = outstr + timestr;
 	//return the output
 	return outstr;
-}
-
-//function to output log messages to the console
-function log(msg, level){
-	//if no level is provided
-	if((level == null) || (level === undefined) || (level.trim() == "")){
-		//level is automatically INFO
-		level = levels.info;
-	}
-	//variable to hold the current time
-	var currentTime = time();
-	//output the message, formatting the time string based on last time and current time
-	console.log("["+timefmt(currentTime,lastTime)+"]["+level+"] "+msg);
-	//assign the current time to the last time; it will be compared the next time a log message is sent
-	lastTime = currentTime;
-}
-
-//function to exit and display a log message based on the status code
-function exit(code){
-	//variable to hold the log level
-	var level = "";
-	//if the exit status code is greater than zero (error occurred)
-	if(code>0){
-		//set the log level to "ERROR"
-		level = levels.err;
-	}
-	//otherwise
-	else{
-		//set the log level to "INFO"
-		level = levels.info;
-	}
-	//output the log message, including the status code
-	log("Exiting... (Code: "+code+")",level);
-	//actually exit the program, returning the status code
-	process.exit(code);
 }

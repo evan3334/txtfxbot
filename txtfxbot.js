@@ -12,11 +12,14 @@
 //require the colors library for colorful output text
 var colors = require("colors");
 //require logutil.js
-var logutil = require("logutil.js");
+var logutil = require("./logutil.js");
 //require the log function (see logutils.js)
 var log = logutil.log;
 var exit = logutil.exit;
 var levels = logutil.levels;
+log("Program start!",levels.info);
+log("Importing libraries...",levels.info);
+var TelegramBot = require("node-telegram-bot-api");
 
 //constant to hold the usage message (will be displayed if the user gets one of the arguments wrong)
 //The arguments required for the program right now are:
@@ -42,12 +45,22 @@ const alphabetMap = {
     //will add more later, just have these for now
 }
 
+checkArguments();
+
 //Check the command line arguments
+//returns true if all required arguments are present (NOTE: doesn't actually check if they're valid)
+//if some are missing, the program will exit
 function checkArguments(){
 	var args = process.argv
 	if(args.length < 3)
 	{
-		log()
+		log("Missing arguments!",levels.err);
+		log("Usage: "+usage,levels.err);
 		exit(1)
 	}
+	return true;
+}
+
+function startTelegram(){
+
 }
