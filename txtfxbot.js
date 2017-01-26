@@ -21,6 +21,20 @@ log("Program start!",levels.info);
 log("Importing libraries...",levels.info);
 var TelegramBot = require("node-telegram-bot-api");
 
+//Start the actual program
+//check command line arguments
+checkArguments();
+//variable to hold the API key
+var key = process.argv[2];
+//start telegram functions (tests key)
+log("Starting Telegram Bot...",levels.info);
+startTelegram();
+
+//variable to hold the bot instance once it is created
+var bot = {};
+//variable to hold the bot information
+var me = {};
+
 //constant to hold the usage message (will be displayed if the user gets one of the arguments wrong)
 //The arguments required for the program right now are:
 // 1. The node command
@@ -45,7 +59,9 @@ const alphabetMap = {
     //will add more later, just have these for now
 }
 
-checkArguments();
+
+
+
 
 //Check the command line arguments
 //returns true if all required arguments are present (NOTE: doesn't actually check if they're valid)
@@ -62,5 +78,7 @@ function checkArguments(){
 }
 
 function startTelegram(){
-
+  bot = new TelegramBot(key+"a");//,{polling:true});
+  me = bot.getMe();
+  log("Telegram Bot successfully started!",levels.info);
 }
