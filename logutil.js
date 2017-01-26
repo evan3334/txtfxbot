@@ -89,7 +89,7 @@ function timefmt(now, last){
 	//variable to hold the current date as a string. uses regular expression to match everything before the "T"
 	var datestr = nowstr.match(/([0-9,-]+)T/)[1].cyan;
 	//variable to hold the current time as a string. uses regular expression to match everything between the "T" and the "Z"
-	var timestr = nowstr.match(/T([0-9,\:,\.]+)Z/)[1].blue;
+	var timestr = nowstr.match(/T([0-9,\:,\.]+)Z/)[1].bold.blue;
 	//checks if the dates are different
 	if (last && checkDateDiff(last, now)){
 		//assign the date string and a space to the output
