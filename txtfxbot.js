@@ -60,9 +60,6 @@ const alphabetMap = {
 }
 
 
-
-
-
 //Check the command line arguments
 //returns true if all required arguments are present (NOTE: doesn't actually check if they're valid)
 //if some are missing, the program will exit
@@ -78,7 +75,28 @@ function checkArguments(){
 }
 
 function startTelegram(){
-  bot = new TelegramBot(key+"a");//,{polling:true});
-  me = bot.getMe();
-  log("Telegram Bot successfully started!",levels.info);
+  bot = new TelegramBot(key);//,{polling:true});
+  log("Fetching bot information...",levels.info);
+  me = bot.getMe().then((me) => {
+  	log("Bot information fetched!",levels.info);
+  }).catch((e) => {
+  	log("An error was encountered while fetching bot information!",levels.err);
+  	log("Either your key is incorrect or something else went wrong.",levels.err);
+  	log(e.stack.bold.red,levels.err);
+  	exit(2);
+  });
+  //log("Telegram Bot successfully started!",levels.info);
+}
+
+//called every time the bot recieves a message from someone.
+function onMessage(msg){
+
+}
+
+//called every time the bot recieves an inline query from someone. 
+//for those not familiar with Telegram, an inline query is when a user types the bot's username in the chat box followed by some query text (WITHOUT sending it.)
+//  the text is sent to the Telegram API and the bot can return content that the user can send in the chat. This is all done from the chat box, which is pretty cool.
+//This bot will allow users to send text in this way and then get a list of different alphabets with the text replaced. 
+function onInlineQuery(msg){
+
 }
