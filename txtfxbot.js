@@ -21,15 +21,6 @@ log("Program start!",levels.info);
 log("Importing libraries...",levels.info);
 var TelegramBot = require("node-telegram-bot-api");
 
-//Start the actual program
-//check command line arguments
-checkArguments();
-//variable to hold the API key
-var key = process.argv[2];
-//start telegram functions (tests key)
-log("Starting Telegram Bot...",levels.info);
-startTelegram();
-
 //variable to hold the bot instance once it is created
 var bot = {};
 //variable to hold the bot information
@@ -39,8 +30,8 @@ var me = {};
 //The arguments required for the program right now are:
 // 1. The node command
 // 2. The name of the program ("txtfxbot.js")
-// 3. The key for the Telegram Bot API
-const usage = "node txtfxbot.js <Telegram Bot API key>"
+// 3. The token for the Telegram Bot API
+var usage = "node txtfxbot.js <Telegram Bot API token>"
 
 //object that holds the alphabet mappings.
 //all the printing ASCII characters (ASCII codes 32-126) are mapped by code to the Unicode character equivalent.
@@ -90,9 +81,17 @@ const alphabetMap = {
   inverted: {rtl: false, name: 'Inverted', alphabet:{32:' ', 33:'¡', 34:'\"', 35:'#', 36:'$', 37:'%', 38:'⅋', 39:',', 40:'(', 41:')', 42:'*', 43:'+', 44:'‘', 45:'-', 46:'.', 47:'/', 48:'0', 49:'1', 50:'2', 51:'3', 52:'4', 53:'5', 54:'6', 55:'7', 56:'8', 57:'9', 58:':', 59:';', 60:'<', 61:'=', 62:'>', 63:'¿', 64:'@', 65:'ɐ', 66:'q', 67:'ɔ', 68:'p', 69:'ǝ', 70:'ɟ', 71:'ƃ', 72:'ɥ', 73:'ı', 74:'ɾ', 75:'ʞ', 76:'ן', 77:'ɯ', 78:'u', 79:'o', 80:'d', 81:'b', 82:'ɹ', 83:'s', 84:'ʇ', 85:'n', 86:'𐌡', 87:'ʍ', 88:'x', 89:'ʎ', 90:'z', 91:'[', 92:'\\', 93:']', 94:'^', 95:'_', 96:'`', 97:'ɐ', 98:'q', 99:'ɔ', 100:'p', 101:'ǝ', 102:'ɟ', 103:'ƃ', 104:'ɥ', 105:'ı', 106:'ɾ', 107:'ʞ', 108:'ן', 109:'ɯ', 110:'u', 111:'o', 112:'d', 113:'b', 114:'ɹ', 115:'s', 116:'ʇ', 117:'n', 118:'ʌ', 119:'ʍ', 120:'x', 121:'ʎ', 122:'z', 123:'{', 124:'|', 125:'}', 126:'~'}},
   invertedBackwards: {rtl: true, name: 'Inverted (Backwards)', alphabet:{32:' ', 33:'~', 34:'}', 35:'|', 36:'{', 37:'z', 38:'ʎ', 39:'x', 40:'ʍ', 41:'ʌ', 42:'n', 43:'ʇ', 44:'s', 45:'ɹ', 46:'b', 47:'d', 48:'o', 49:'u', 50:'ɯ', 51:'ן', 52:'ʞ', 53:'ɾ', 54:'ı', 55:'ɥ', 56:'ƃ', 57:'ɟ', 58:'ǝ', 59:'p', 60:'ɔ', 61:'q', 62:'ɐ', 63:'`', 64:'_', 65:'^', 66:']', 67:'\\', 68:'[', 69:'z', 70:'ʎ', 71:'x', 72:'ʍ', 73:'𐌡', 74:'n', 75:'ʇ', 76:'s', 77:'ɹ', 78:'b', 79:'d', 80:'o', 81:'u', 82:'ɯ', 83:'ן', 84:'ʞ', 85:'ɾ', 86:'ı', 87:'ɥ', 88:'ƃ', 89:'ɟ', 90:'ǝ', 91:'p', 92:'ɔ', 93:'q', 94:'ɐ', 95:'@', 96:'¿', 97:'>', 98:'=', 99:'<', 100:';', 101:':', 102:'9', 103:'8', 104:'7', 105:'6', 106:'5', 107:'4', 108:'3', 109:'2', 110:'1', 111:'0', 112:'/', 113:'.', 114:'-', 115:'‘', 116:'+', 117:'*', 118:')', 119:'(', 120:',', 121:'⅋', 122:'%', 123:'$', 124:'#', 125:'\"', 126:'¡'}},
   reversed: {rtl: false, name: 'Reversed', alphabet:{32:' ', 33:'!', 34:'\"', 35:'#', 36:'$', 37:'%', 38:'&', 39:'\'', 40:'(', 41:')', 42:'*', 43:'+', 44:',', 45:'-', 46:'.', 47:'/', 48:'0', 49:'߁', 50:'2', 51:'3', 52:'4', 53:'5', 54:'6', 55:'7', 56:'8', 57:'9', 58:':', 59:'⁏', 60:'<', 61:'=', 62:'>', 63:'⸮', 64:'@', 65:'A', 66:'d', 67:'Ↄ', 68:'b', 69:'Ǝ', 70:'ꟻ', 71:'G', 72:'H', 73:'I', 74:'J', 75:'K', 76:'⅃', 77:'M', 78:'ᴎ', 79:'O', 80:'ꟼ', 81:'p', 82:'ᴙ', 83:'Ꙅ', 84:'T', 85:'U', 86:'V', 87:'W', 88:'X', 89:'Y', 90:'Z', 91:'[', 92:'\\', 93:']', 94:'^', 95:'_', 96:'`', 97:'A', 98:'d', 99:'ↄ', 100:'b', 101:'ɘ', 102:'ꟻ', 103:'g', 104:'H', 105:'i', 106:'j', 107:'k', 108:'l', 109:'m', 110:'ᴎ', 111:'o', 112:'q', 113:'p', 114:'ᴙ', 115:'ꙅ', 116:'T', 117:'U', 118:'v', 119:'w', 120:'x', 121:'Y', 122:'z', 123:'{', 124:'|', 125:'}', 126:'∽'}},
-  reversedBackwards: {rtl: false, name: 'Reversed (Backwards)', alphabet:{32:' ', 33:'∽', 34:'}', 35:'|', 36:'{', 37:'z', 38:'Y', 39:'x', 40:'w', 41:'v', 42:'U', 43:'T', 44:'ꙅ', 45:'ᴙ', 46:'p', 47:'q', 48:'o', 49:'ᴎ', 50:'m', 51:'l', 52:'k', 53:'j', 54:'i', 55:'H', 56:'g', 57:'ꟻ', 58:'ɘ', 59:'b', 60:'ↄ', 61:'d', 62:'A', 63:'`', 64:'_', 65:'^', 66:']', 67:'\\', 68:'[', 69:'Z', 70:'Y', 71:'X', 72:'W', 73:'V', 74:'U', 75:'T', 76:'Ꙅ', 77:'ᴙ', 78:'p', 79:'ꟼ', 80:'O', 81:'ᴎ', 82:'M', 83:'⅃', 84:'K', 85:'J', 86:'I', 87:'H', 88:'G', 89:'ꟻ', 90:'Ǝ', 91:'b', 92:'Ↄ', 93:'d', 94:'A', 95:'@', 96:'⸮', 97:'>', 98:'=', 99:'<', 100:'⁏', 101:':', 102:'9', 103:'8', 104:'7', 105:'6', 106:'5', 107:'4', 108:'3', 109:'2', 110:'߁', 111:'0', 112:'/', 113:'.', 114:'-', 115:',', 116:'+', 117:'*', 118:')', 119:'(', 120:'\'', 121:'&', 122:'%', 123:'$', 124:'#', 125:'\"', 126:'!'}}
+  reversedBackwards: {rtl: true, name: 'Reversed (Backwards)', alphabet:{32:' ', 33:'∽', 34:'}', 35:'|', 36:'{', 37:'z', 38:'Y', 39:'x', 40:'w', 41:'v', 42:'U', 43:'T', 44:'ꙅ', 45:'ᴙ', 46:'p', 47:'q', 48:'o', 49:'ᴎ', 50:'m', 51:'l', 52:'k', 53:'j', 54:'i', 55:'H', 56:'g', 57:'ꟻ', 58:'ɘ', 59:'b', 60:'ↄ', 61:'d', 62:'A', 63:'`', 64:'_', 65:'^', 66:']', 67:'\\', 68:'[', 69:'Z', 70:'Y', 71:'X', 72:'W', 73:'V', 74:'U', 75:'T', 76:'Ꙅ', 77:'ᴙ', 78:'p', 79:'ꟼ', 80:'O', 81:'ᴎ', 82:'M', 83:'⅃', 84:'K', 85:'J', 86:'I', 87:'H', 88:'G', 89:'ꟻ', 90:'Ǝ', 91:'b', 92:'Ↄ', 93:'d', 94:'A', 95:'@', 96:'⸮', 97:'>', 98:'=', 99:'<', 100:'⁏', 101:':', 102:'9', 103:'8', 104:'7', 105:'6', 106:'5', 107:'4', 108:'3', 109:'2', 110:'߁', 111:'0', 112:'/', 113:'.', 114:'-', 115:',', 116:'+', 117:'*', 118:')', 119:'(', 120:'\'', 121:'&', 122:'%', 123:'$', 124:'#', 125:'\"', 126:'!'}}
 }
 
+//Start the actual program
+//check command line arguments
+checkArguments();
+//variable to hold the API token
+var token = process.argv[2];
+//start telegram functions (tests token)
+log("Starting Telegram Bot...",levels.info);
+startTelegram();
 
 //Check the command line arguments
 //returns true if all required arguments are present (NOTE: doesn't actually check if they're valid)
@@ -109,13 +108,13 @@ function checkArguments(){
 }
 
 function startTelegram(){
-  bot = new TelegramBot(key);//,{polling:true});
+  bot = new TelegramBot(token);//,{polling:true});
   log("Fetching bot information...",levels.info);
   me = bot.getMe().then((me) => {
   	log("Bot information fetched!",levels.info);
   }).catch((e) => {
   	log("An error was encountered while fetching bot information!",levels.err);
-  	log("Either your key is incorrect or something else went wrong.",levels.err);
+  	log("Either your token is incorrect or something else went wrong.",levels.err);
   	log(e.stack.bold.red,levels.err);
   	exit(2);
   });
