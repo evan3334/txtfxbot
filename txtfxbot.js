@@ -19,7 +19,10 @@ var exit = logutil.exit;
 var levels = logutil.levels;
 log("Program start!",levels.info);
 log("Importing libraries...",levels.info);
+//require the telegram bot api library
 var TelegramBot = require("node-telegram-bot-api");
+//require the UUID library
+var uuid = require('uuid');
 
 //variable to hold the bot instance once it is created
 var bot = {};
@@ -132,7 +135,42 @@ function startTelegramPolling(bot){
   //set up event listeners
   bot.on('text',onMessage);
   bot.on('inline_query',onInlineQuery);
+  bot.on('chosen_inline_result',onChosenInlineResult);
+  bot.on('callback_query',onCallbackQuery);
 }
+
+function doAlphabetConversion(text,alphabetName){
+  //check if the alphabet is actually in the map
+  if(alphabetMap[alphabetName]){
+    //get the alphabet we want to use (to make things easier)
+    var currentAlphabet = alphabetMap[alphabetName];
+    //split the text up into individual characters
+    var characters = text.split("");
+    //variable to hold the result of the conversion; characters will be added to this
+    var result = "";
+    //iterate over each character in the text
+    for(i=0;i<characters.length;i++){
+      //get the current character (to make things easier)
+      var currentChar = characters[i];
+      //check the if the current character's code is included in the alphabet
+      if(currentAlphabet.alphabet[currentChar.charCodeAt(0)]){
+        //add the equivalent character to the result string
+        result += currentAlphabet.alphabet[currentChar.charCodeAt(0)];
+      }
+      //if it's not:
+      else
+      {
+        //skip over this character and move to the next one
+        //add the original character to the result string
+        result += currentChar;
+      }
+    }
+    //return the final string once we're done with the conversion
+    return result;
+  }
+}
+
+//Event Handlers
 
 //called every time the bot recieves a text message from someone.
 function onMessage(msg){
@@ -144,7 +182,36 @@ function onMessage(msg){
 //  the text is sent to the Telegram API and the bot can return content that the user can send in the chat. This is all done from the chat box, which is pretty cool.
 //This bot will allow users to send text in this way and then get a list of different alphabets with the text replaced. 
 function onInlineQuery(query){
+  //announce that we have recieved an inline query
   log("Inline query from "+getUserFormat(query.from)+"; Query ID: "+query.id+"; Text: '"+query.query+"'");
+  //check if the text isn't empty
+  if(query.query!=""){
+    //array to hold results to be returned to the user
+    var results = [];
+    //loop through all the alphabets
+    for (var alphabet in alphabetMap)
+    {
+      results.push(createInlineQueryResult(uuid.v4(),alphabet,doAlphabetConversion(query.query,alphabet)));
+    }
+    //send the results through telegram back to the user
+    bot.answerInlineQuery(query.id,results);
+  }
+}
+
+function onChosenInlineResult(chosenResult){
+
+}
+
+function onCallbackQuery(query){
+
+}
+
+//Abstractions
+
+//abstraction
+//returns an inline query result object given the id and some information.
+function createInlineQueryResult(resultId, title, description){
+  return {type:"article",id:resultId,title:title,description:description,input_message_content:{message_text:description}};
 }
 
 //abstraction
