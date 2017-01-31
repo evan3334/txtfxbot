@@ -91,7 +91,7 @@ checkArguments();
 var token = process.argv[2];
 //start telegram functions (tests token)
 log("Starting Telegram Bot...",levels.info);
-startTelegram();
+initTelegram(token);
 
 //Check the command line arguments
 //returns true if all required arguments are present (NOTE: doesn't actually check if they're valid)
@@ -107,29 +107,65 @@ function checkArguments(){
 	return true;
 }
 
-function startTelegram(){
-  bot = new TelegramBot(token);//,{polling:true});
+function initTelegram(token){
+  bot = new TelegramBot(token,{polling:true});
   log("Fetching bot information...",levels.info);
   me = bot.getMe().then((me) => {
   	log("Bot information fetched!",levels.info);
+    log("Bot ID: "+me.id+"; Name: "+me.first_name+(me.last_name?" "+me.last_name:"")+"; Username: @"+me.username);
+    startTelegramPolling(bot);
   }).catch((e) => {
   	log("An error was encountered while fetching bot information!",levels.err);
-  	log("Either your token is incorrect or something else went wrong.",levels.err);
+    //check if the token was incorrect (API server will return HTTP 401 UNAUTHORIZED error)
+    if(JSON.parse(e.response.body).error_code==401){
+      log("Your token is incorrect! (API returned 401 UNAUTHORIZED)",levels.err);
+    }
   	log(e.stack.bold.red,levels.err);
   	exit(2);
   });
   //log("Telegram Bot successfully started!",levels.info);
 }
 
-//called every time the bot recieves a message from someone.
-function onMessage(msg){
+function startTelegramPolling(bot){
+  //start polling
+  //bot.initPolling();
+  //set up event listeners
+  bot.on('text',onMessage);
+  bot.on('inline_query',onInlineQuery);
+}
 
+//called every time the bot recieves a text message from someone.
+function onMessage(msg){
+  log("Message from "+getUserFormat(msg.from)+": '"+msg.text+"'",levels.info);
 }
 
 //called every time the bot recieves an inline query from someone. 
 //for those not familiar with Telegram, an inline query is when a user types the bot's username in the chat box followed by some query text (WITHOUT sending it.)
 //  the text is sent to the Telegram API and the bot can return content that the user can send in the chat. This is all done from the chat box, which is pretty cool.
 //This bot will allow users to send text in this way and then get a list of different alphabets with the text replaced. 
-function onInlineQuery(msg){
+function onInlineQuery(query){
+  log("Inline query from "+getUserFormat(query.from)+"; Query ID: "+query.id+"; Text: '"+query.query+"'");
+}
 
+//abstraction
+//returns a formatted string for user information.
+//the returned string will be in the format "Full Name (@username) [ID: XXXXXXXXX]"
+function getUserFormat(user){
+  return getFormattedName(user).bold.green+" (".yellow+getUsername(user)+")".yellow+" [ID: ".bold.cyan+user.id.toString().inverse+"]".bold.cyan;
+}
+
+//abstraction
+//returns the formatted full name of a user.
+//if the user has no last name set, then "Firstname" will be returned,
+//but if the user does have a last name set, then "Firstname Lastname" will be returned.
+function getFormattedName(user){
+  return user.first_name+(user.last_name?" "+user.last_name:"");
+}
+
+//abstraction
+//returns the formatted username of a user.
+//if the user has a username, then "@username" will be returned, but if
+//the user does not have a username, then "No username" will be returned.
+function getUsername(user){
+  return (user.username?"@"+user.username.bold.magenta:"No username".italic.magenta);
 }
