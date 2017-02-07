@@ -90,6 +90,8 @@ const alphabetMap = {
   //reversedBackwards: {rtl: true, name: 'Reversed (Backwards)', alphabet:{32:' ', 33:'∽', 34:'}', 35:'|', 36:'{', 37:'z', 38:'Y', 39:'x', 40:'w', 41:'v', 42:'U', 43:'T', 44:'ꙅ', 45:'ᴙ', 46:'p', 47:'q', 48:'o', 49:'ᴎ', 50:'m', 51:'l', 52:'k', 53:'j', 54:'i', 55:'H', 56:'g', 57:'ꟻ', 58:'ɘ', 59:'b', 60:'ↄ', 61:'d', 62:'A', 63:'`', 64:'_', 65:'^', 66:']', 67:'\\', 68:'[', 69:'Z', 70:'Y', 71:'X', 72:'W', 73:'V', 74:'U', 75:'T', 76:'Ꙅ', 77:'ᴙ', 78:'p', 79:'ꟼ', 80:'O', 81:'ᴎ', 82:'M', 83:'⅃', 84:'K', 85:'J', 86:'I', 87:'H', 88:'G', 89:'ꟻ', 90:'Ǝ', 91:'b', 92:'Ↄ', 93:'d', 94:'A', 95:'@', 96:'⸮', 97:'>', 98:'=', 99:'<', 100:'⁏', 101:':', 102:'9', 103:'8', 104:'7', 105:'6', 106:'5', 107:'4', 108:'3', 109:'2', 110:'߁', 111:'0', 112:'/', 113:'.', 114:'-', 115:',', 116:'+', 117:'*', 118:')', 119:'(', 120:'\'', 121:'&', 122:'%', 123:'$', 124:'#', 125:'\"', 126:'!'}}
 }
 
+var originalMessages = {};
+
 //Start the actual program
 //check command line arguments
 checkArguments();
@@ -138,8 +140,9 @@ function startTelegramPolling(bot){
   //set up event listeners
   bot.on('text',onMessage);
   bot.on('inline_query',onInlineQuery);
-  bot.on('chosen_inline_result',onChosenInlineResult);
   bot.on('callback_query',onCallbackQuery);
+  bot.on('chosen_inline_result',onChosenInlineResult);
+  
 }
 
 function doAlphabetConversion(text,alphabetName){
@@ -173,11 +176,43 @@ function doAlphabetConversion(text,alphabetName){
   }
 }
 
+function storeMessage(msg){
+  originalMessages[msg.message_id] = msg.text;
+}
+
+function recallMessage(msgId){
+  return originalMessages[msgId];
+}
+
+function getAlphabetByIndex(index){
+  var i = 0;
+  for(var alphabetName in alphabetMap){
+    if(i == index){
+      return alphabetName;
+    }
+    i++;
+  }
+}
+
+function len(object){
+  var count = 0;
+  for(var current in object){
+    if (object.hasOwnProperty(current)){
+      count++;
+    }
+  }
+  return count;
+}
+
 //Event Handlers
 
 //called every time the bot recieves a text message from someone.
 function onMessage(msg){
   log("Message from "+getUserFormat(msg.from)+": '"+msg.text+"'",levels.info);
+  storeMessage(msg);
+  var alphabetName = getAlphabetByIndex(0);
+  log(alphabetName);
+  bot.sendMessage(msg.from.id,createMessageFormat(msg.text,alphabetName,1,len(alphabetMap)),{reply_markup:createSelectionKeyboard(0,0,len(alphabetMap)-1),parse_mode: "Markdown",reply_to_message_id: msg.message_id});
 }
 
 //called every time the bot recieves an inline query from someone. 
@@ -185,10 +220,11 @@ function onMessage(msg){
 //  the text is sent to the Telegram API and the bot can return content that the user can send in the chat. This is all done from the chat box, which is pretty cool.
 //This bot will allow users to send text in this way and then get a list of different alphabets with the text replaced. 
 function onInlineQuery(query){
-  //announce that we have recieved an inline query
-  log("Inline query from "+getUserFormat(query.from)+"; Query ID: "+query.id+"; Text: '"+query.query+"'");
   //check if the text isn't empty
+  //to save us some time and annoyance we'd rather not waste time answering emtpy queries
   if(query.query!=""){
+    //announce that we have recieved an inline query
+    log("Inline query from "+getUserFormat(query.from)+"; Query ID: "+query.id+"; Text: '"+query.query+"'");
     //array to hold results to be returned to the user
     var results = [];
     //loop through all the alphabets
@@ -203,10 +239,65 @@ function onInlineQuery(query){
 }
 
 function onCallbackQuery(query){
-
+  log("Callback query from "+getUserFormat(query.from)+"; Query ID: "+query.id+"; Data: '"+query.data+"'");
+  var newKeyboard;
+  var data = JSON.parse(query.data);
+  if(data){
+    if(data.goto!==undefined){
+      var gotoIndex = data.goto;
+      var alphabetName = getAlphabetByIndex(gotoIndex);
+      var messageId = query.message.message_id;
+      var chatId = query.message.chat.id;
+      var originalId = query.message.reply_to_message.message_id;
+      var originalText = recallMessage(originalId);
+      newKeyboard = createSelectionKeyboard(gotoIndex,0,len(alphabetMap)-1);
+      bot.editMessageText(createMessageFormat(originalText,alphabetName,gotoIndex+1,len(alphabetMap)),
+        {message_id: messageId, chat_id: chatId, reply_markup: newKeyboard,parse_mode: "Markdown"});
+    }
+    else if(data.select!==undefined){
+      var selectIndex = data.select;
+      var alphabetName = getAlphabetByIndex(selectIndex);
+      var messageId = query.message.message_id;
+      var chatId = query.message.chat.id;
+      var originalId = query.message.reply_to_message.message_id;
+      var originalText = recallMessage(originalId);
+      var newText = doAlphabetConversion(originalText,alphabetName);
+      bot.editMessageText(newText,{message_id:messageId, chat_id: chatId});
+    }
+  }
+  bot.answerCallbackQuery(query.id,"",false,{});
 }
 
 //Abstractions
+
+function createMessageFormat(originalText, alphabetName, index, total){
+  return "*"+alphabetMap[alphabetName].name+"* ("+index+"/"+total+")\n"
+        +doAlphabetConversion(originalText,alphabetName);
+}
+
+function createSelectionKeyboard(index, start, end){
+  //arrays to hold the buttons
+  var buttons = [];
+  //array to hold the first row of buttons
+  var firstRow = [];
+  var previousIndex = (index==start ? end : index-1);
+  var nextIndex = (index==end ? start : index+1);
+  firstRow.push(createInlineKeyboardButton("⬅ Prev ("+(previousIndex+1)+")","{\"goto\":"+previousIndex+"}"));
+  firstRow.push(createInlineKeyboardButton("✅ Select","{\"select\":"+index+"}"));
+  firstRow.push(createInlineKeyboardButton("Next ("+(nextIndex+1)+") ➡","{\"goto\":"+nextIndex+"}"));
+  buttons.push(firstRow);
+  return createInlineKeyboardMarkup(buttons);
+}
+
+//requires a two-dimensional array of inline keyboard button objects and wraps them in the syntax that telegram requires.
+//see createInlineKeyboardButton for a function that generates them.
+function createInlineKeyboardMarkup(buttons){
+  return {inline_keyboard:buttons};
+}
+
+function createInlineKeyboardButton(text, callbackData){
+  return {text:text,callback_data:callbackData};
+}
 
 //abstraction
 //returns an inline query result object given the id and some information.
