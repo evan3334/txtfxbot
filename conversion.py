@@ -1,8 +1,8 @@
 # ******************************************
 # *               TxtFX Bot                *
 # *         Created by Evan Straw          *
-# * Applies various Unicode alphabet and   *
-# * pseudoalphabet effects to text         *
+# * Applies various effects using fancy    *
+# * Unicode characters to text inputted    *
 # * inputted via Telegram.                 *
 # *                                        *
 # * This code is under the MIT License     *
