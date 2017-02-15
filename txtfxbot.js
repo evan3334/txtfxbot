@@ -122,7 +122,7 @@ function initTelegram(token){
   }).catch((e) => {
   	log("An error was encountered while fetching bot information!",levels.err);
     //check if the token was incorrect (API server will return HTTP 401 UNAUTHORIZED error)
-    if(JSON.parse(e.response.body).error_code==401){
+    if(e.response && e.response.body && JSON.parse(e.response.body).error_code==401){
       log("Your token is incorrect! (API returned 401 UNAUTHORIZED)",levels.err);
     }
   	log(e.stack.bold.red,levels.err);
@@ -138,8 +138,6 @@ function startTelegramPolling(bot){
   bot.on('text',onMessage);
   bot.on('inline_query',onInlineQuery);
   bot.on('callback_query',onCallbackQuery);
-  bot.on('chosen_inline_result',onChosenInlineResult);
-  
 }
 
 function doAlphabetConversion(text,alphabetName){
