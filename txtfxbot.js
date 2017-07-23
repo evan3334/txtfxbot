@@ -24,6 +24,8 @@ var TelegramBot = require("node-telegram-bot-api");
 //require the UUID library
 var uuid = require('uuid');
 
+var txtfxcore = require('./txtfxcore.js');
+
 //variable to hold the bot instance once it is created
 var bot = {};
 //variable to hold the bot information
@@ -49,7 +51,7 @@ var usage = "node txtfxbot.js <Telegram Bot API token>"
 //    |- alphabet equivalent
 //
 // NOTE: I didn't write this whole thing manually, I used a small python script to generate it (see conversion.py)
-const alphabetMap = {
+/*const alphabetMap = {
   //i don't see any reason why anyone would actually use this one, it's just there as a template i guess
   //normalASCII: {rtl: false, name: 'Normal ASCII', alphabet:{32:' ', 33:'!', 34:'"', 35:'#', 36:'$', 37:'%', 38:'&', 39:"'", 40:'(', 41:')', 42:'*', 43:'+', 44:',', 45:'-', 46:'.', 47:'/', 48:'0', 49:'1', 50:'2', 51:'3', 52:'4', 53:'5', 54:'6', 55:'7', 56:'8', 57:'9', 58:':', 59:';', 60:'<', 61:'=', 62:'>', 63:'?', 64:'@', 65:'A', 66:'B', 67:'C', 68:'D', 69:'E', 70:'F', 71:'G', 72:'H', 73:'I', 74:'J', 75:'K', 76:'L', 77:'M', 78:'N', 79:'O', 80:'P', 81:'Q', 82:'R', 83:'S', 84:'T', 85:'U', 86:'V', 87:'W', 88:'X', 89:'Y', 90:'Z', 91:'[', 92:'\\', 93:']', 94:'^', 95:'_', 96:'`', 97:'a', 98:'b', 99:'c', 100:'d', 101:'e', 102:'f', 103:'g', 104:'h', 105:'i', 106:'j', 107:'k', 108:'l', 109:'m', 110:'n', 111:'o', 112:'p', 113:'q', 114:'r', 115:'s', 116:'t', 117:'u', 118:'v', 119:'w', 120:'x', 121:'y', 122:'z', 123:'{', 124:'|', 125:'}', 126:'~'}},
   circled: {rtl: false, name: 'Circled', alphabet:{32:' ', 33:'!', 34:'\"', 35:'#', 36:'$', 37:'%', 38:'&', 39:'\'', 40:'(', 41:')', 42:'⊛', 43:'⊕', 44:',', 45:'⊖', 46:'⨀', 47:'⊘', 48:'0', 49:'①', 50:'②', 51:'③', 52:'④', 53:'⑤', 54:'⑥', 55:'⑦', 56:'⑧', 57:'⑨', 58:':', 59:';', 60:'⧀', 61:'⊜', 62:'⧁', 63:'?', 64:'@', 65:'Ⓐ', 66:'Ⓑ', 67:'Ⓒ', 68:'Ⓓ', 69:'Ⓔ', 70:'Ⓕ', 71:'Ⓖ', 72:'Ⓗ', 73:'Ⓘ', 74:'Ⓙ', 75:'Ⓚ', 76:'Ⓛ', 77:'Ⓜ', 78:'Ⓝ', 79:'Ⓞ', 80:'Ⓟ', 81:'Ⓠ', 82:'Ⓡ', 83:'Ⓢ', 84:'Ⓣ', 85:'Ⓤ', 86:'Ⓥ', 87:'Ⓦ', 88:'Ⓧ', 89:'Ⓨ', 90:'Ⓩ', 91:'[', 92:'⦸', 93:']', 94:'^', 95:'_', 96:'`', 97:'ⓐ', 98:'ⓑ', 99:'ⓒ', 100:'ⓓ', 101:'ⓔ', 102:'ⓕ', 103:'ⓖ', 104:'ⓗ', 105:'ⓘ', 106:'ⓙ', 107:'ⓚ', 108:'ⓛ', 109:'ⓜ', 110:'ⓝ', 111:'ⓞ', 112:'ⓟ', 113:'ⓠ', 114:'ⓡ', 115:'ⓢ', 116:'ⓣ', 117:'ⓤ', 118:'ⓥ', 119:'ⓦ', 120:'ⓧ', 121:'ⓨ', 122:'ⓩ', 123:'{', 124:'⦶', 125:'}', 126:'~'}},
@@ -86,7 +88,7 @@ const alphabetMap = {
   mathSansItalic: {rtl: false, name: 'Math (Sans+Italic)', alphabet:{32:' ', 33:'!', 34:'\"', 35:'#', 36:'$', 37:'%', 38:'&', 39:'\'', 40:'(', 41:')', 42:'*', 43:'+', 44:',', 45:'-', 46:'.', 47:'/', 48:'0', 49:'1', 50:'2', 51:'3', 52:'4', 53:'5', 54:'6', 55:'7', 56:'8', 57:'9', 58:':', 59:';', 60:'<', 61:'=', 62:'>', 63:'?', 64:'@', 65:'𝘈', 66:'𝘉', 67:'𝘊', 68:'𝘋', 69:'𝘌', 70:'𝘍', 71:'𝘎', 72:'𝘏', 73:'𝘐', 74:'𝘑', 75:'𝘒', 76:'𝘓', 77:'𝘔', 78:'𝘕', 79:'𝘖', 80:'𝘗', 81:'𝘘', 82:'𝘙', 83:'𝘚', 84:'𝘛', 85:'𝘜', 86:'𝘝', 87:'𝘞', 88:'𝘟', 89:'𝘠', 90:'𝘡', 91:'[', 92:'\\', 93:']', 94:'^', 95:'_', 96:'`', 97:'𝘢', 98:'𝘣', 99:'𝘤', 100:'𝘥', 101:'𝘦', 102:'𝘧', 103:'𝘨', 104:'𝘩', 105:'𝘪', 106:'𝘫', 107:'𝘬', 108:'𝘭', 109:'𝘮', 110:'𝘯', 111:'𝘰', 112:'𝘱', 113:'𝘲', 114:'𝘳', 115:'𝘴', 116:'𝘵', 117:'𝘶', 118:'𝘷', 119:'𝘸', 120:'𝘹', 121:'𝘺', 122:'𝘻', 123:'{', 124:'|', 125:'}', 126:'~'}},
   inverted: {rtl: false, name: 'Inverted', alphabet:{32:' ', 33:'¡', 34:'\"', 35:'#', 36:'$', 37:'%', 38:'⅋', 39:',', 40:'(', 41:')', 42:'*', 43:'+', 44:'‘', 45:'-', 46:'.', 47:'/', 48:'0', 49:'1', 50:'2', 51:'3', 52:'4', 53:'5', 54:'6', 55:'7', 56:'8', 57:'9', 58:':', 59:';', 60:'<', 61:'=', 62:'>', 63:'¿', 64:'@', 65:'ɐ', 66:'q', 67:'ɔ', 68:'p', 69:'ǝ', 70:'ɟ', 71:'ƃ', 72:'ɥ', 73:'ı', 74:'ɾ', 75:'ʞ', 76:'ן', 77:'ɯ', 78:'u', 79:'o', 80:'d', 81:'b', 82:'ɹ', 83:'s', 84:'ʇ', 85:'n', 86:'𐌡', 87:'ʍ', 88:'x', 89:'ʎ', 90:'z', 91:'[', 92:'\\', 93:']', 94:'^', 95:'_', 96:'`', 97:'ɐ', 98:'q', 99:'ɔ', 100:'p', 101:'ǝ', 102:'ɟ', 103:'ƃ', 104:'ɥ', 105:'ı', 106:'ɾ', 107:'ʞ', 108:'ן', 109:'ɯ', 110:'u', 111:'o', 112:'d', 113:'b', 114:'ɹ', 115:'s', 116:'ʇ', 117:'n', 118:'ʌ', 119:'ʍ', 120:'x', 121:'ʎ', 122:'z', 123:'{', 124:'|', 125:'}', 126:'~'}},
   reversed: {rtl: false, name: 'Reversed', alphabet:{32:' ', 33:'!', 34:'\"', 35:'#', 36:'$', 37:'%', 38:'&', 39:'\'', 40:'(', 41:')', 42:'*', 43:'+', 44:',', 45:'-', 46:'.', 47:'/', 48:'0', 49:'߁', 50:'2', 51:'3', 52:'4', 53:'5', 54:'6', 55:'7', 56:'8', 57:'9', 58:':', 59:'⁏', 60:'<', 61:'=', 62:'>', 63:'⸮', 64:'@', 65:'A', 66:'d', 67:'Ↄ', 68:'b', 69:'Ǝ', 70:'ꟻ', 71:'G', 72:'H', 73:'I', 74:'J', 75:'K', 76:'⅃', 77:'M', 78:'ᴎ', 79:'O', 80:'ꟼ', 81:'p', 82:'ᴙ', 83:'Ꙅ', 84:'T', 85:'U', 86:'V', 87:'W', 88:'X', 89:'Y', 90:'Z', 91:'[', 92:'\\', 93:']', 94:'^', 95:'_', 96:'`', 97:'A', 98:'d', 99:'ↄ', 100:'b', 101:'ɘ', 102:'ꟻ', 103:'g', 104:'H', 105:'i', 106:'j', 107:'k', 108:'l', 109:'m', 110:'ᴎ', 111:'o', 112:'q', 113:'p', 114:'ᴙ', 115:'ꙅ', 116:'T', 117:'U', 118:'v', 119:'w', 120:'x', 121:'Y', 122:'z', 123:'{', 124:'|', 125:'}', 126:'∽'}}
-}
+}*/
 
 var originalMessages = {};
 
@@ -141,36 +143,7 @@ function startTelegramPolling(bot){
   bot.on('callback_query',onCallbackQuery);
 }
 
-function doAlphabetConversion(text,alphabetName){
-  //check if the alphabet is actually in the map
-  if(alphabetMap[alphabetName]){
-    //get the alphabet we want to use (to make things easier)
-    var currentAlphabet = alphabetMap[alphabetName];
-    //split the text up into individual characters
-    var characters = text.split("");
-    //variable to hold the result of the conversion; characters will be added to this
-    var result = "";
-    //iterate over each character in the text
-    for(i=0;i<characters.length;i++){
-      //get the current character (to make things easier)
-      var currentChar = characters[i];
-      //check the if the current character's code is included in the alphabet
-      if(currentAlphabet.alphabet[currentChar.charCodeAt(0)]){
-        //add the equivalent character to the result string
-        result += currentAlphabet.alphabet[currentChar.charCodeAt(0)];
-      }
-      //if it's not:
-      else
-      {
-        //skip over this character and move to the next one
-        //add the original character to the result string
-        result += currentChar;
-      }
-    }
-    //return the final string once we're done with the conversion
-    return result;
-  }
-}
+
 
 //stores the text of a message in the originalMessages object with the message id as the key
 function storeMessage(msg){
@@ -187,39 +160,6 @@ function deleteMessage(msgId){
   delete originalMessages[msgId];
 }
 
-//get the alphabet name, given the index in the alphabetMap
-function getAlphabetByIndex(index){
-  //variable to hold the current index as we iterate over the entire alphabetMap
-  var i = 0;
-  //iterate through each alphabetName in the alphabet map
-  for(var alphabetName in alphabetMap){
-    //if the current index is the index we wanted
-    if(i == index){
-      //return the alphabet name
-      return alphabetName;
-    }
-    //increment the current index
-    i++;
-  }
-}
-
-//determine the length of the top level of an object (i.e. how many properties it has)
-//javascript doesn't actually have this functionality out of the box so we have to do it ourselves
-function len(object){
-  //variable to hold the current count
-  var count = 0;
-  //loop through each property in the object
-  for(var current in object){
-    //if the property is an actual property and not part of the prototype
-    if (object.hasOwnProperty(current)){
-      //increment the count
-      count++;
-    }
-  }
-  //we're done, return the count
-  return count;
-}
-
 //Event Handlers
 
 //called every time the bot recieves a text message from someone.
@@ -229,9 +169,9 @@ function onMessage(msg){
   //store the contents of the message in the stored messages object
   storeMessage(msg);
   //variable to hold the name of the first alphabet in the map
-  var alphabetName = getAlphabetByIndex(0);
+  var effectName = txtfxcore.effects[0].name;
   //send the user the selection menu
-  bot.sendMessage(msg.from.id,createMessageFormat(msg.text,alphabetName,1,len(alphabetMap)),{reply_markup:createSelectionKeyboard(0,0,len(alphabetMap)-1),parse_mode: "Markdown",reply_to_message_id: msg.message_id});
+  bot.sendMessage(msg.from.id,createMessageFormat(msg.text,effectName,1,txtfxcore.effects.length),{reply_markup:createSelectionKeyboard(0,0,txtfxcore.effects.length-1),parse_mode: "Markdown",reply_to_message_id: msg.message_id});
 }
 
 //called every time the bot recieves an inline query from someone. 
@@ -247,10 +187,10 @@ function onInlineQuery(query){
     //array to hold results to be returned to the user
     var results = [];
     //loop through all the alphabets
-    for (var alphabet in alphabetMap)
+    for(var i=0; i<txtfxcore.effects.length; i++)
     {
-      var currentAlphabet = alphabetMap[alphabet];
-      results.push(createInlineQueryResult(uuid.v4(),currentAlphabet.name,doAlphabetConversion(query.query,alphabet)));
+      var currentEffect = txtfxcore.effects[i];
+      results.push(createInlineQueryResult(uuid.v4(),currentEffect.name,txtfxcore.processText(currentEffect.id,query.query)));
     }
     //send the results through telegram back to the user
     bot.answerInlineQuery(query.id,results);
@@ -276,7 +216,7 @@ function onCallbackQuery(query){
       //variable for the index of the page the user wanted to go to
       var gotoIndex = data.goto;
       //variable for the name of the alphabet at that index
-      var alphabetName = getAlphabetByIndex(gotoIndex);
+      var effectID = txtfxcore.effects[gotoIndex].id;
       //the message ID of the message that held the button the user pressed (we're gonna need this to edit the message)
       var messageId = query.message.message_id;
       //the chat ID that the message was in (we're also going to need this to edit the message)
@@ -288,9 +228,9 @@ function onCallbackQuery(query){
       //the original Text of the message (recalled out of the stored message object using the message ID as a key)
       var originalText = recallMessage(originalId);
       //create a new selection keyboard with updated buttons
-      newKeyboard = createSelectionKeyboard(gotoIndex,0,len(alphabetMap)-1);
+      newKeyboard = createSelectionKeyboard(gotoIndex,0,txtfxcore.effects.length-1);
       //update the text of the message to show the text with the new alphabet and buttons
-      bot.editMessageText(createMessageFormat(originalText,alphabetName,gotoIndex+1,len(alphabetMap)),
+      bot.editMessageText(createMessageFormat(originalText,effectID,gotoIndex+1,txtfxcore.effects.length),
         {message_id: messageId, chat_id: chatId, reply_markup: newKeyboard,parse_mode: "Markdown"});
     }
     //if the data has a "select" property (meaning the user wanted to select the current page)
@@ -298,7 +238,7 @@ function onCallbackQuery(query){
       //the index of the page the user wanted to select
       var selectIndex = data.select;
       //the name of the alphabet at that index
-      var alphabetName = getAlphabetByIndex(selectIndex);
+      var effectID = txtfxcore.effects[selectIndex].id;
       //the ID of the message that held the button the user pressed (we need this to edit the message)
       var messageId = query.message.message_id;
       //the ID of the chat that the message was in (we also need this to edit the message)
@@ -310,7 +250,7 @@ function onCallbackQuery(query){
       //the original Text of the message (recalled out of the stored message object using the message ID as a key)
       var originalText = recallMessage(originalId);
       //the new text for the message (just the plain converted text, no alphabet title)
-      var newText = doAlphabetConversion(originalText,alphabetName);
+      var newText = txtfxcore.processText(effectID,originalText);
       //update the text of the message to show just the converted text and remove the buttons
       bot.editMessageText(newText,{message_id:messageId, chat_id: chatId});
     }
@@ -325,9 +265,9 @@ function onCallbackQuery(query){
 //creates the message for the selection menu, given the original text, alphabet name, current index (this should be human readable
 // so it shouldn't be zero-indexed), and total number of alphabets
 //this function does the alphabet conversion.
-function createMessageFormat(originalText, alphabetName, index, total){
-  return "*"+alphabetMap[alphabetName].name+"* ("+index+"/"+total+")\n"
-        +doAlphabetConversion(originalText,alphabetName);
+function createMessageFormat(originalText, effectID, index, total){
+  return "*"+txtfxcore.getEffectByID(effectID).name+"* ("+index+"/"+total+")\n"
+        +txtfxcore.processText(effectID, originalText);
 }
 
 //creates the selection keyboard for the selection menu, given the current index, start (pretty much always 0), and end (the index
