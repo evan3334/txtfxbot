@@ -118,14 +118,14 @@ function checkArguments(){
 function initTelegram(token){
   bot = new TelegramBot(token,{polling:true});
   log("Fetching bot information...",levels.info);
-  me = bot.getMe().then((me) => {
+  me = bot.getMe().then(function(me) {
   	log("Bot information fetched!",levels.info);
     log("Bot ID: "+me.id+"; Name: "+me.first_name+(me.last_name?" "+me.last_name:"")+"; Username: @"+me.username);
     startTelegramPolling(bot);
-  }).catch((e) => {
+  }).catch(function(e){
   	log("An error was encountered while fetching bot information!",levels.err);
     //check if the token was incorrect (API server will return HTTP 401 UNAUTHORIZED error)
-    if(e.response && e.response.body && JSON.parse(e.response.body).error_code==401){
+    if(e.response && e.response.body && JSON.parse(e.response.body).error_code===401){
       log("Your token is incorrect! (API returned 401 UNAUTHORIZED)",levels.err);
     }
   	log(e.stack.bold.red,levels.err);
@@ -162,9 +162,9 @@ function deleteMessage(msgId){
 
 //Event Handlers
 
-//called every time the bot recieves a text message from someone.
+//called every time the bot receives a text message from someone.
 function onMessage(msg){
-  //log to the console that we recieved a message
+  //log to the console that we received a message
   log("Message from "+getUserFormat(msg.from)+": '"+msg.text+"'",levels.info);
   //store the contents of the message in the stored messages object
   storeMessage(msg);
@@ -174,15 +174,15 @@ function onMessage(msg){
   bot.sendMessage(msg.from.id,createMessageFormat(msg.text,effectName,1,txtfxcore.effects.length),{reply_markup:createSelectionKeyboard(0,0,txtfxcore.effects.length-1),parse_mode: "Markdown",reply_to_message_id: msg.message_id});
 }
 
-//called every time the bot recieves an inline query from someone. 
+//called every time the bot receives an inline query from someone.
 //for those not familiar with Telegram, an inline query is when a user types the bot's username in the chat box followed by some query text (WITHOUT sending it.)
 //  the text is sent to the Telegram API and the bot can return content that the user can send in the chat. This is all done from the chat box, which is pretty cool.
 //This bot will allow users to send text in this way and then get a list of different alphabets with the text replaced. 
 function onInlineQuery(query){
   //check if the text isn't empty
   //to save us some time and annoyance we'd rather not waste time answering emtpy queries
-  if(query.query!=""){
-    //announce that we have recieved an inline query
+  if(query.query!==""){
+    //announce that we have received an inline query
     log("Inline query from "+getUserFormat(query.from)+"; Query ID: "+query.id+"; Text: '"+query.query+"'");
     //array to hold results to be returned to the user
     var results = [];
@@ -203,10 +203,13 @@ function onInlineQuery(query){
 // that string is sent to the bot. We can use this to make a menu (have the user send us a small JSON object containing
 // what page/alphabet they want.)
 function onCallbackQuery(query){
-  //announce that we have recieved a callback query
+  //announce that we have received a callback query
   log("Callback query from "+getUserFormat(query.from)+"; Query ID: "+query.id+"; Data: '"+query.data+"'");
   //variable to hold the new keyboard (we're gonna have to change the buttons if the user went back or forward one page)
   var newKeyboard;
+
+  var effectID, messageId, chatId, originalId, originalText;
+
   //variable to hold the callback data (parsed for JSON and converted to a JavaScript object)
   var data = JSON.parse(query.data);
   //if the data isn't null (let's not waste time on blank/bad callback queries)
@@ -216,17 +219,17 @@ function onCallbackQuery(query){
       //variable for the index of the page the user wanted to go to
       var gotoIndex = data.goto;
       //variable for the name of the alphabet at that index
-      var effectID = txtfxcore.effects[gotoIndex].id;
+      effectID = txtfxcore.effects[gotoIndex].id;
       //the message ID of the message that held the button the user pressed (we're gonna need this to edit the message)
-      var messageId = query.message.message_id;
+      messageId = query.message.message_id;
       //the chat ID that the message was in (we're also going to need this to edit the message)
-      var chatId = query.message.chat.id;
+      chatId = query.message.chat.id;
       //the ID of the original message (the source of the raw text - we need this to do the conversion again)
       //in order to save this ID, we made the menu a reply to the original message. Telegram lets you access the original
       // message's ID through "reply_to_message"
-      var originalId = query.message.reply_to_message.message_id;
+      originalId = query.message.reply_to_message.message_id;
       //the original Text of the message (recalled out of the stored message object using the message ID as a key)
-      var originalText = recallMessage(originalId);
+      originalText = recallMessage(originalId);
       //create a new selection keyboard with updated buttons
       newKeyboard = createSelectionKeyboard(gotoIndex,0,txtfxcore.effects.length-1);
       //update the text of the message to show the text with the new alphabet and buttons
@@ -238,17 +241,17 @@ function onCallbackQuery(query){
       //the index of the page the user wanted to select
       var selectIndex = data.select;
       //the name of the alphabet at that index
-      var effectID = txtfxcore.effects[selectIndex].id;
+      effectID = txtfxcore.effects[selectIndex].id;
       //the ID of the message that held the button the user pressed (we need this to edit the message)
-      var messageId = query.message.message_id;
+      messageId = query.message.message_id;
       //the ID of the chat that the message was in (we also need this to edit the message)
-      var chatId = query.message.chat.id;
+      chatId = query.message.chat.id;
       //the ID of the original message (the source of the raw text - we need this to do the conversion again)
       //in order to save this ID, we made the menu a reply to the original message. Telegram lets you access the original
       // message's ID through "reply_to_message"
-      var originalId = query.message.reply_to_message.message_id;
+      originalId = query.message.reply_to_message.message_id;
       //the original Text of the message (recalled out of the stored message object using the message ID as a key)
-      var originalText = recallMessage(originalId);
+      originalText = recallMessage(originalId);
       //the new text for the message (just the plain converted text, no alphabet title)
       var newText = txtfxcore.processText(effectID,originalText);
       //update the text of the message to show just the converted text and remove the buttons
@@ -279,10 +282,10 @@ function createSelectionKeyboard(index, start, end){
   var firstRow = [];
   //variable to hold the index that pressing the "previous" button will send the user to
   //if the current index is the start index (the user is on the first option) this will be set to the last index, looping around to the end
-  var previousIndex = (index==start ? end : index-1);
+  var previousIndex = (index===start ? end : index-1);
   //variable to hold the index that pressing the "next" button will send the user to
   //if the current index is the end index (the user is on the last option) this will be set to the first index, looping around
-  var nextIndex = (index==end ? start : index+1);
+  var nextIndex = (index===end ? start : index+1);
   firstRow.push(createInlineKeyboardButton("⬅ Prev ("+(previousIndex+1)+")","{\"goto\":"+previousIndex+"}"));
   firstRow.push(createInlineKeyboardButton("✅ Select","{\"select\":"+index+"}"));
   firstRow.push(createInlineKeyboardButton("Next ("+(nextIndex+1)+") ➡","{\"goto\":"+nextIndex+"}"));

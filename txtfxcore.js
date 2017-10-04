@@ -78,10 +78,10 @@ module.exports.effects = [
 module.exports.processText = function(effectID, inputText)
 {
 	var effect = module.exports.getEffectByID(effectID);
-	if(effect != null)
+	if(effect !== null)
 	{
 		var type = effect.type;
-		if(type=='alphabet')
+		if(type==='alphabet')
 		{
 			if(effect.alphabet)
 			{
@@ -92,7 +92,7 @@ module.exports.processText = function(effectID, inputText)
 				return null;
 			}
 		}
-		else if(type == 'custom')
+		else if(type === 'custom')
 		{
 			if(effect.processor)
 			{
@@ -112,14 +112,14 @@ module.exports.processText = function(effectID, inputText)
 
 module.exports.getEffectByID = function(effectID)
 {
-	if(effectID == null || effectID == '')
+	if(effectID === null || effectID === '')
 	{
 		return null; //return null if no effect name was given
 	}
 	for(var i=0; i<module.exports.effects.length; i++) //loop through all the effects
 	{
 		current = module.exports.effects[i]; //variable to hold the current effect
-		if(current.id == effectID) //if the names match
+		if(current.id === effectID) //if the names match
 		{
 			return current; //return the current effect; it's what we're looking for
 		}
