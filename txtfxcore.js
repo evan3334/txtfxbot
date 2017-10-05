@@ -12,6 +12,9 @@
  * Contains functions for applying        *
  * effects to inputted text.              *
  ******************************************/
+
+var emoji = require('node-emoji');
+
 /*
 Array of all the available effects.
 There are currently two types: alphabet and custom.
@@ -129,5 +132,46 @@ module.exports.getEffectByID = function(effectID)
 
 function emojify(input)
 {
-	return input;
+  var emojis = [];
+  function em(name){
+    var e = emoji.find(name);
+    if(e){
+      return e.emoji
+    } else {
+      return e
+    }
+  }
+
+  emojis.push(em('joy'));
+  emojis.push(em('b'));
+  emojis.push(em('ok_hand'));
+  emojis.push(em('fire'));
+  emojis.push(em('weary'));
+  emojis.push(em('thumbsup'));
+  emojis.push(em('100'));
+  emojis.push(em('pray'));
+  emojis.push(em('raised_hands'));
+  emojis.push(em('eyes'));
+
+  function randomEmoji()
+  {
+    var max = emojis.length -1 ;
+    var num = Math.round(Math.random()*max);
+    return emojis[num];
+  }
+
+  var words = input.split(" ");
+  var output = "";
+  for(var i=0; i<words.length; i++)
+  {
+    var current = words[i];
+
+    output += current;
+    output += " ";
+    output += randomEmoji();
+    output += randomEmoji();
+    output += " ";
+  }
+
+	return output;
 }
