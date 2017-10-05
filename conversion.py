@@ -9,6 +9,10 @@
 # * (see LICENSE)                          *
 # ******************************************
 # * conversion.py                          *
+# *          !!! PLEASE NOTE !!!           *
+# * As of version 2.0.0, this script no    *
+# *  longer produces the correct format.   *
+# *           !!!!!!!!!!!!!!!!!            *
 # * This is a small script I wrote to make *
 # * the creation of the alphabet map a lot *
 # * easier. The user inputs the alphabet   *
