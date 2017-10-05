@@ -14,6 +14,11 @@
  ******************************************/
 
 var emoji = require('node-emoji');
+var logutil = require("./logutil.js");
+//require the log function (see logutils.js)
+var log = logutil.log;
+var exit = logutil.exit;
+var levels = logutil.levels;
 
 /*
 Array of all the available effects.
@@ -152,6 +157,18 @@ function emojify(input)
   emojis.push(em('pray'));
   emojis.push(em('raised_hands'));
   emojis.push(em('eyes'));
+  emojis.push(em('joy_cat'));
+  emojis.push(em('a'));
+  emojis.push(em('sunglasses'));
+  emojis.push(em('thinking_face'));
+
+  for(var e in emojis)
+  {
+    if(emojis[e] === undefined)
+    {
+      log("Undefined emoji! "+e,levels.err);
+    }
+  }
 
   function randomEmoji()
   {
