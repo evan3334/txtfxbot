@@ -193,7 +193,8 @@ function onInlineQuery(query){
       results.push(createInlineQueryResult(uuid.v4(),currentEffect.name,txtfxcore.processText(currentEffect.id,query.query)));
     }
     //send the results through telegram back to the user
-    bot.answerInlineQuery(query.id,results);
+    bot.answerInlineQuery(query.id,results,{cache_time:1}); //cache time is zero to permit a user to repeat effects like
+                                                            //  emojify that use randomization
   }
 }
 
