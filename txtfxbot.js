@@ -171,7 +171,7 @@ function onMessage(msg){
   //variable to hold the name of the first alphabet in the map
   var effectID = txtfxcore.effects[0].id;
   //send the user the selection menu
-  bot.sendMessage(msg.from.id,createMessageFormat(msg.text,effectID,1,txtfxcore.effects.length),{reply_markup:createSelectionKeyboard(0,0,txtfxcore.effects.length-1),parse_mode: "Markdown",reply_to_message_id: msg.message_id});
+  bot.sendMessage(msg.chat.id,createMessageFormat(msg.text,effectID,1,txtfxcore.effects.length),{reply_markup:createSelectionKeyboard(0,0,txtfxcore.effects.length-1),parse_mode: "Markdown",reply_to_message_id: msg.message_id});
 }
 
 //called every time the bot receives an inline query from someone.
