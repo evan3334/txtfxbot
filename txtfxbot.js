@@ -169,9 +169,9 @@ function onMessage(msg){
   //store the contents of the message in the stored messages object
   storeMessage(msg);
   //variable to hold the name of the first alphabet in the map
-  var effectName = txtfxcore.effects[0].name;
+  var effectID = txtfxcore.effects[0].id;
   //send the user the selection menu
-  bot.sendMessage(msg.from.id,createMessageFormat(msg.text,effectName,1,txtfxcore.effects.length),{reply_markup:createSelectionKeyboard(0,0,txtfxcore.effects.length-1),parse_mode: "Markdown",reply_to_message_id: msg.message_id});
+  bot.sendMessage(msg.from.id,createMessageFormat(msg.text,effectID,1,txtfxcore.effects.length),{reply_markup:createSelectionKeyboard(0,0,txtfxcore.effects.length-1),parse_mode: "Markdown",reply_to_message_id: msg.message_id});
 }
 
 //called every time the bot receives an inline query from someone.
@@ -180,7 +180,7 @@ function onMessage(msg){
 //This bot will allow users to send text in this way and then get a list of different alphabets with the text replaced. 
 function onInlineQuery(query){
   //check if the text isn't empty
-  //to save us some time and annoyance we'd rather not waste time answering emtpy queries
+  //to save us some time and annoyance we'd rather not waste time answering empty queries
   if(query.query!==""){
     //announce that we have received an inline query
     log("Inline query from "+getUserFormat(query.from)+"; Query ID: "+query.id+"; Text: '"+query.query+"'");
@@ -254,9 +254,10 @@ function onCallbackQuery(query){
       //the original Text of the message (recalled out of the stored message object using the message ID as a key)
       originalText = recallMessage(originalId);
       //the new text for the message (just the plain converted text, no alphabet title)
-      var newText = txtfxcore.processText(effectID,originalText);
+      var newText = query.message.text.split('\n')[1]; //txtfxcore.processText(effectID,originalText);
       //update the text of the message to show just the converted text and remove the buttons
       bot.editMessageText(newText,{message_id:messageId, chat_id: chatId});
+      deleteMessage(originalId);
     }
   }
   //respond to the callback query (telegram requires that you do this because clients display a little progress bar
@@ -270,8 +271,9 @@ function onCallbackQuery(query){
 // so it shouldn't be zero-indexed), and total number of alphabets
 //this function does the alphabet conversion.
 function createMessageFormat(originalText, effectID, index, total){
+  var processed = txtfxcore.processText(effectID, originalText);
   return "*"+txtfxcore.getEffectByID(effectID).name+"* ("+index+"/"+total+")\n"
-        +txtfxcore.processText(effectID, originalText);
+        +processed;
 }
 
 //creates the selection keyboard for the selection menu, given the current index, start (pretty much always 0), and end (the index
