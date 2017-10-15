@@ -1,3 +1,11 @@
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# THIS FILE DOES NOTHING USEFUL ANYMORE
+# IT IS BROKEN SINCE 2.0.0 CHANGED THE EFFECT MAP FORMAT
+# IT WAS ONLY INCLUDED IN THIS REPOSITORY FOR THE SAKE OF
+#  MAKING *ALL* THE CODE PUBLICLY AVAILABLE.
+# SINCE THIS FILE SERVES NO PURPOSE IT WILL LIKELY BE DELETED IN THE NEXT COMMIT OR TWO
+
+
 # ******************************************
 # *               TxtFX Bot                *
 # *         Created by Evan Straw          *

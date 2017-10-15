@@ -17,7 +17,6 @@ var emoji = require('node-emoji');
 var logutil = require("./logutil.js");
 //require the log function (see logutils.js)
 var log = logutil.log;
-var exit = logutil.exit;
 var levels = logutil.levels;
 
 /*
@@ -87,37 +86,73 @@ module.exports.effects = [
 
 module.exports.processText = function(effectID, inputText)
 {
-	var effect = module.exports.getEffectByID(effectID);
-	if(effect !== null)
-	{
-		var type = effect.type;
-		if(type==='alphabet')
-		{
-			if(effect.alphabet)
-			{
-				return doAlphabetConversion(inputText, effect.alphabet);
-			}
-			else
-			{
-				return null;
-			}
-		}
-		else if(type === 'custom')
-		{
-			if(effect.processor)
-			{
-				return effect.processor(inputText);
-			}
-			else
-			{
-				return null;
-			}
-		}
-		else
-		{
-			return null;
-		}
-	}
+    function process(effectID, inputText)
+    {
+        var effect = module.exports.getEffectByID(effectID);
+        if(effect !== null)
+        {
+            var type = effect.type;
+            if(type==='alphabet')
+            {
+                if(effect.alphabet)
+                {
+                    return doAlphabetConversion(inputText, effect.alphabet);
+                }
+            }
+            else if(type === 'custom')
+            {
+                if(effect.processor)
+                {
+                    return effect.processor(inputText);
+                }
+            }
+            return inputText;
+        }
+    }
+
+    //The following code lets people do partial effects by enclosing the part(s) they want the effect applied to between backticks (`) or pipes (|).
+
+	var gPattern = /[|`]([^`|]*)[`|]/g;  //global pattern to match all text between backticks or pipes (allows matching multiple results)
+    var pattern = /[|`]([^`|]*)[`|]/;  //non-global pattern (allows us to test if there is at least one match without throwing off the global pattern)
+    if(pattern.test(inputText)) //if we have any matches at all, at least one
+    {
+        var matches = []; //array to hold all regex matches
+        while(current = gPattern.exec(inputText))  //the way regular expressions work, the pattern has to be executed multiple times to get all the matches
+                                                   // this will repeat until there are no more matches, and put them all into the array
+        {
+            matches.push(current);  //push all the matches to the array
+        }
+        var replace = []; //array to hold all the text pieces to replace the matches with, once they've been processed with an effect
+        for(var i=0;i<matches.length;i++)     //iterate over all the matches
+        {
+            replace.push(process(effectID, matches[i][1]));  //process only group number 1 (the stuff inside the backticks) and put it in the replace array
+        }
+        var outStr = ''; //empty string to hold the result; we'll build onto this as we go
+        var done = false;  //whether or not we're done. will be used to break the loop later
+        var startIndex = 0; //the current starting index (point in the string at which we will start taking regular text)
+        var currentMatch = 0; //the current regex match we're on
+        while(!done)  //while the done flag has not been set, keep going. we'll set this when we run out of matches
+        {
+            if(matches[currentMatch]) { //as long as the current match is not null (if it is, we ran out of matches)
+                for (var i = startIndex; i < matches[currentMatch].index; i++) { //for all the letters between the current start index and the index of the current match (all the normal text)
+                    outStr += inputText.charAt(i);  //add the letters to the output string
+                }
+                outStr += replace[currentMatch]; //add the processed text for the current match to the output string
+                startIndex = matches[currentMatch].index + matches[currentMatch][0].length; //set the start index to the index of the first normal letter after the match (current match start index plus its length)
+                currentMatch += 1; //move on to the next match (add one to current match)
+            }
+            else //if the current match is null (we ran out of matches)
+            {
+                outStr += inputText.substring(startIndex); //add just the rest of the input to the output string (starting at the start index)
+                done = true;  //set the done flag to break out of the loop
+            }
+        }
+        return outStr; //return the output string
+    }
+    else //if the regex fails (no matches)
+    {
+        return process(effectID, inputText); //just process the entire text normally and return it
+    }
 }
 
 module.exports.getEffectByID = function(effectID)
