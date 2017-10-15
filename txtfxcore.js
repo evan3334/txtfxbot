@@ -17,7 +17,6 @@ var emoji = require('node-emoji');
 var logutil = require("./logutil.js");
 //require the log function (see logutils.js)
 var log = logutil.log;
-var exit = logutil.exit;
 var levels = logutil.levels;
 
 /*
