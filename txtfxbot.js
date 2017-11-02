@@ -25,6 +25,10 @@ var TelegramBot = require("node-telegram-bot-api");
 //require the UUID library
 var uuid = require('uuid');
 
+//require the HTML entities library (Telegram inline queries now escape everything as html entities)
+var Entities = require('html-entities').XmlEntities;
+var entities = new Entities();
+
 var txtfxcore = require('./txtfxcore.js');
 
 //variable to hold the bot instance once it is created
@@ -148,6 +152,8 @@ function onInlineQuery(query){
   //check if the text isn't empty
   //to save us some time and annoyance we'd rather not waste time answering empty queries
   if(query.query!==""){
+    //decode HTML entities
+    query.query = entities.decode(query.query);
     //announce that we have received an inline query
     log("Inline query from "+getUserFormat(query.from)+"; Query ID: "+query.id+"; Text: '"+query.query+"'");
     //array to hold results to be returned to the user
