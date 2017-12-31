@@ -41,7 +41,7 @@ var me = {};
 // 1. The node command
 // 2. The name of the program ("txtfxbot.js")
 // 3. The token for the Telegram Bot API
-var usage = "node txtfxbot.js <Telegram Bot API token>"
+var usage = "node txtfxbot.js <Telegram Bot API token>";
 
 var originalMessages = {};
 
@@ -58,7 +58,7 @@ initTelegram(token);
 //returns true if all required arguments are present (NOTE: doesn't actually check if they're valid)
 //if some are missing, the program will exit
 function checkArguments(){
-	var args = process.argv
+	var args = process.argv;
 	if(args.length < 3)
 	{
 		log("Missing arguments!",levels.err);
