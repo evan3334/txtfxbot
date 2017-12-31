@@ -6,7 +6,7 @@
     "html-entities": "1.2.1",
     "uuid": "latest"
   },
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Telegram bot to apply effects to pieces of text using Unicode characters",
   "license": "MIT",
   "repository": "https://github.com/evan3334/txtfxbot"
