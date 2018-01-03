@@ -3,9 +3,10 @@
     "colors": "^1.1.2",
     "node-emoji": "^1.8.1",
     "node-telegram-bot-api": "^0.28.0",
-    "html-entities": "1.2.1"
+    "html-entities": "1.2.1",
+    "uuid": "latest"
   },
-  "version": "2.4.0",
+  "version": "2.5.2",
   "description": "Telegram bot to apply effects to pieces of text using Unicode characters",
   "license": "MIT",
   "repository": "https://github.com/evan3334/txtfxbot"
