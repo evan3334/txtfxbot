@@ -251,14 +251,21 @@ function clap(input)
 function random_caps(input)
 {
   var output = "";
+  var capsCount = 0;
+  var lowerCount = 0;
   var letters = input.split('');
-  for(var i = 0; i<letters.length-1; i++)
+  for(var i = 0; i<letters.length; i++)
   {
-    if(Math.random()>0.5){
+    var random = Math.random();
+    if(capsCount>=3 || (random>0.5 && lowerCount<3)){
       output+=letters[i].toLowerCase();
+      capsCount = 0;
+      lowerCount++;
     }
-    else {
+    else if(lowerCount>=3 || (random<0.5 && capsCount<3)){
       output+=letters[i].toUpperCase();
+      lowerCount = 0;
+      capsCount++;
     }
   }
   return output;
