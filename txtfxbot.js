@@ -17,7 +17,21 @@ var logutil = require("./logutil.js");
 var log = logutil.log;
 var exit = logutil.exit;
 var levels = logutil.levels;
-log("Program start!",levels.info);
+
+var fs = require('fs');
+var version;
+if(fs.existsSync('./package.json')){
+  version = JSON.parse(fs.readFileSync('./package.json').toString()).version;
+  if(version) {
+    version = "(v" + version + ")"
+  }
+  else{
+    version = '';
+  }
+}
+
+log("Program start! "+version,levels.info);
+
 log("Importing libraries...",levels.info);
 var commands = require('./commands.js');
 //require the telegram bot api library
@@ -30,6 +44,7 @@ var Entities = require('html-entities').XmlEntities;
 var entities = new Entities();
 
 var txtfxcore = require('./txtfxcore.js');
+
 
 //variable to hold the bot instance once it is created
 var bot = {};
